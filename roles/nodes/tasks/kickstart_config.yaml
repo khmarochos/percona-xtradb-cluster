@@ -7,7 +7,7 @@
     mode: 0644
     force: true
   vars:
-    hostname: "{{ percona_cluster_node }}"
+    hostname: "{{ hostvars[percona_cluster_node]['hostname_full'] }}"
     ipv4_address: "{{ hostvars[percona_cluster_node]['ansible_host'] }}"
     ipv4_netmask: "{{ hostvars[percona_cluster_node]['ipv4_netmask'] }}"
     ipv4_gateway: "{{ hostvars[percona_cluster_node]['ipv4_gateway'] }}"

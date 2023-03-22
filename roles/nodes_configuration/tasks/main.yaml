@@ -1,0 +1,9 @@
+---
+
+- name: Configure the clusters
+  include_tasks: configure_cluster.yaml
+  vars:
+    cluster_spool_directory: "{{ spool_directory }}/{{ percona_cluster }}"
+  loop: "{{ percona_clusters }}"
+  loop_control:
+    loop_var: percona_cluster

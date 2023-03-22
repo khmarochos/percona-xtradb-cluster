@@ -1,0 +1,25 @@
+---
+
+- name: "Delegate the settings to the {{ percona_cluster }} cluster's nodes"
+  ansible.builtin.set_fact:
+    hostname_shortened: >-
+      {{
+        (
+          hostvars[host]['inventory_hostname'] | split('.')
+        )[0]
+      }}
+    hostname_full: >-
+      {{
+        [
+          (
+            hostvars[host]['inventory_hostname'] | split('.')
+          )[0],
+          hostvars[host]['domain_name']
+        ] | join('.')
+      }}
+  delegate_to: "{{ host }}"
+  delegate_facts: true
+  loop: "{{ groups[percona_cluster] }}"
+  loop_control:
+    loop_var: host
+  no_log: true

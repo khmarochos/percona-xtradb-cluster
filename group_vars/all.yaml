@@ -1,0 +1,11 @@
+---
+
+percona_clusters: >-
+  {{
+    groups.percona
+    | map('extract', hostvars, 'group_names')
+    | flatten
+    | unique
+    | map('regex_search', '^pxc_.+')
+    | difference([None])
+  }}

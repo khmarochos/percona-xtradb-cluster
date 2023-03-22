@@ -9,9 +9,12 @@ all:
   hosts:
     localhost:
       ansible_connection: local
-    pxc1:
-    pxc2:
-    pxc3:
+    pxc1.production:
+    pxc2.production:
+    pxc3.production:
+    pxc1.development:
+    pxc2.development:
+    pxc3.development:
   children:
     percona:
       vars:
@@ -29,10 +32,30 @@ all:
           - 8.8.8.8
           - 9.9.9.9
         domain_name: pxc.khmarochos.melnyk.host
-      hosts:
-        pxc1:
-          ansible_host: 10.13.4.128
-        pxc2:
-          ansible_host: 10.13.4.129
-        pxc3:
-          ansible_host: 10.13.4.130
+      children:
+        pxc_production:
+          vars:
+            ipv4_nameservers:
+              - 10.13.4.254
+          hosts:
+            pxc1.production:
+              ansible_host: 10.13.4.128
+            pxc2.production:
+              ansible_host: 10.13.4.129
+            pxc3.production:
+              ansible_host: 10.13.4.130
+        pxc_development:
+          vars:
+            ipv4_nameservers:
+              - 1.1.1.1
+              - 8.8.8.8
+              - 9.9.9.9
+            domain_name: d.pxc.khmarochos.melnyk.host
+            ansible_ssh_port: 22122
+          hosts:
+            pxc1.development:
+              ansible_host: 10.13.4.144
+            pxc2.development:
+              ansible_host: 10.13.4.145
+            pxc3.development:
+              ansible_host: 10.13.4.146
