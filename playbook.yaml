@@ -15,3 +15,4 @@
     - percona
   roles:
     - nodes_firewall
+    - nodes_percona_cluster

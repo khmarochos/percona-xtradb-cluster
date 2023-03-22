@@ -1,0 +1,14 @@
+[mysqld]
+wsrep_provider=/usr/lib64/galera3/libgalera_smm.so
+wsrep_cluster_name=pxc-cluster
+wsrep_cluster_address=gcomm://{{ groups[percona_cluster] | map('extract', hostvars, ['ansible_host']) | sort | join(',') }}
+wsrep_node_name={{ hostname_shortened }}
+wsrep_node_address={{ ansible_host }}
+wsrep_slave_threads=8
+wsrep_log_conflicts
+wsrep_sst_method=xtrabackup-v2
+wsrep_sst_auth={{ mysql_sst_username }}:{{ mysql_sst_password }}
+pxc_strict_mode=ENFORCING
+innodb_autoinc_lock_mode=2
+binlog_format=ROW
+log_bin={{ hostname_shortened }}-bin

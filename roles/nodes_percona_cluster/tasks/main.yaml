@@ -1,0 +1,4 @@
+---
+
+- name: Set up the wsrep configuration
+  ansible.builtin.include_tasks: wsrep_cnf.yaml

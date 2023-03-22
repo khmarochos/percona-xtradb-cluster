@@ -1,0 +1,11 @@
+---
+
+- name: Install the wsrep.cnf configuration file
+  ansible.builtin.template:
+    src: wsrep.cnf.j2
+    dest: /etc/percona-xtradb-cluster.conf.d/wsrep.cnf
+    owner: root
+    group: root
+    mode: 0600
+    force: yes
+

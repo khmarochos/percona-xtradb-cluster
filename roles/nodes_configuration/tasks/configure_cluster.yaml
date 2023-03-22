@@ -1,5 +1,24 @@
 ---
 
+- name: "Create the configuration directory for the {{ percona_cluster }} cluster"
+  ansible.builtin.file:
+    path: "{{ cluster_spool_directory }}"
+    state: directory
+    mode: 0700
+    force: no
+
+- name: "Generate or lookup the password of sst for the {{ percona_cluster }} cluster"
+  ansible.builtin.set_fact:
+    __nodes_configuration__mysql_sst_username: sst
+    __nodes_configuration__mysql_sst_password: >-
+      {{
+        lookup(
+          'password',
+          cluster_spool_directory ~ '/sst.password length=32 chars=ascii_letters,digits'
+        )
+      }}
+  no_log: true
+
 - name: "Delegate the settings to the {{ percona_cluster }} cluster's nodes"
   ansible.builtin.set_fact:
     hostname_shortened: >-
@@ -17,6 +36,9 @@
           hostvars[host]['domain_name']
         ] | join('.')
       }}
+    percona_cluster: "{{ percona_cluster }}"
+    mysql_sst_username: "{{ __nodes_configuration__mysql_sst_username }}"
+    mysql_sst_password: "{{ __nodes_configuration__mysql_sst_password }}"
   delegate_to: "{{ host }}"
   delegate_facts: true
   loop: "{{ groups[percona_cluster] }}"
