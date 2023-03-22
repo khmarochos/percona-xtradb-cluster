@@ -1,0 +1,21 @@
+---
+
+- name: Create the directory for the RSA key
+  ansible.builtin.file:
+    name: "{{ ssh_private_key_file | dirname }}"
+    state: directory
+    mode: 0700
+    recurse: true
+
+- name: Generate the RSA key
+  community.crypto.openssh_keypair:
+    path: "{{ ssh_private_key_file }}"
+    type: rsa
+    force: no
+  register: __controller__rsa_key
+  failed_when:
+    - __controller__rsa_key.public_key != lookup('file', ssh_public_key_file)
+
+- name: Register a fact containing the public part of the RSA key
+  ansible.builtin.set_fact:
+    ssh_public_rsa_key: "{{ lookup('file', ssh_public_key_file) }}"

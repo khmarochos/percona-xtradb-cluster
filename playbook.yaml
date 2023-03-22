@@ -1,0 +1,8 @@
+---
+
+- name: Set up the servers
+  hosts:
+    - localhost
+  roles:
+    - ssh_key
+    - nodes

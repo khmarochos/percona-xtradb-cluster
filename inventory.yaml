@@ -1,0 +1,33 @@
+---
+
+all:
+  vars:
+    spool_directory: "{{ lookup('env', 'HOME') }}/var/khmarochos"
+    ssh_private_key_file: "{{ spool_directory }}/ssh/id_rsa"
+    ssh_public_key_file: "{{ ssh_private_key_file }}.pub"
+    ssh_known_hosts_file: "{{ spool_directory }}/ssh/known_hosts"
+  hosts:
+    localhost:
+      ansible_connection: local
+    pxc1:
+    pxc2:
+    pxc3:
+  children:
+    percona:
+      vars:
+        kickstart_template: pxc_node.ks.j2
+        ipv4_netmask: 255.255.255.0
+        ipv4_gateway: 10.13.4.254
+        ipv4_nameservers:
+          - 10.13.4.254
+          - 1.1.1.1
+          - 8.8.8.8
+          - 9.9.9.9
+        domain_name: pxc.khmarochos.melnyk.host
+      hosts:
+        pxc1:
+          ansible_host: 10.13.4.128
+        pxc2:
+          ansible_host: 10.13.4.129
+        pxc3:
+          ansible_host: 10.13.4.130

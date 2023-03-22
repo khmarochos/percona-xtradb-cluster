@@ -1,0 +1,31 @@
+---
+
+- name: "Prepare the CentOS Kickstart configuration file for {{ percona_cluster_node }}"
+  ansible.builtin.template:
+    src: "{{ hostvars[percona_cluster_node]['kickstart_template'] }}"
+    dest: "{{ kickstart_directory }}/{{ percona_cluster_node }}{{ kickstart_file_suffix }}"
+    mode: 0644
+    force: true
+  vars:
+    hostname: "{{ percona_cluster_node }}"
+    ipv4_address: "{{ hostvars[percona_cluster_node]['ansible_host'] }}"
+    ipv4_netmask: "{{ hostvars[percona_cluster_node]['ipv4_netmask'] }}"
+    ipv4_gateway: "{{ hostvars[percona_cluster_node]['ipv4_gateway'] }}"
+    ipv4_nameservers: "{{ hostvars[percona_cluster_node]['ipv4_nameservers'] }}"
+    ssh_key: "{{ ssh_public_rsa_key }}"
+
+- name: "Get the CentOS Kickstart configuration file's checksum for {{ percona_cluster_node }}"
+  ansible.builtin.stat:
+    path: "{{ kickstart_directory }}/{{ percona_cluster_node }}{{ kickstart_file_suffix }}"
+    checksum_algorithm: sha1
+  register: result
+
+- name: "Remember the CentOS Kickstart configuration file's checksum for {{ percona_cluster_node }}"
+  ansible.builtin.set_fact:
+    __controller__kickstart_checksums: >-
+      {{
+        __controller__kickstart_checksums
+          | default({})
+          | combine({ percona_cluster_node: result.stat.checksum })
+      }}
+
