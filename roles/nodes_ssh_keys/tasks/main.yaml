@@ -1,0 +1,7 @@
+---
+
+- name: Add the SSH host key for each node
+  ansible.builtin.include_tasks: ssh_key.yaml
+  loop: "{{ groups.percona }}"
+  loop_control:
+    loop_var: percona_cluster_node

@@ -5,4 +5,6 @@
     - localhost
   roles:
     - ssh_key
-    - nodes
+    - role: nodes
+      when: not (skip_nodes_setup | default(false) | bool)
+    - nodes_ssh_keys

@@ -12,6 +12,7 @@
     ipv4_netmask: "{{ hostvars[percona_cluster_node]['ipv4_netmask'] }}"
     ipv4_gateway: "{{ hostvars[percona_cluster_node]['ipv4_gateway'] }}"
     ipv4_nameservers: "{{ hostvars[percona_cluster_node]['ipv4_nameservers'] }}"
+    ssh_port: "{{ hostvars[percona_cluster_node]['ansible_ssh_port'] }}"
     ssh_key: "{{ ssh_public_rsa_key }}"
 
 - name: "Get the CentOS Kickstart configuration file's checksum for {{ percona_cluster_node }}"

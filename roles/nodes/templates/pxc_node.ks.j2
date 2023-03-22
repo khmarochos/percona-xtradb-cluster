@@ -7,7 +7,7 @@ rootpw --iscrypted !!
 # System authorization information
 auth --useshadow --passalgo=sha512
 # Firewall configuration
-firewall --enabled --ssh
+firewall --enabled --port={{ ssh_port }}:tcp
 # SELinux configuration
 selinux --disabled
 # Installation logging level
@@ -49,4 +49,7 @@ yum -y install epel-release
 yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
 yum -y install Percona-XtraDB-Cluster-57.x86_64
 systemctl disable mysql.service
+{% if ssh_port != '22' %}
+sed -i 's/^#Port [0-9]\+$/Port {{ ssh_port }}/' /etc/ssh/sshd_config
+{% endif %}
 %end
