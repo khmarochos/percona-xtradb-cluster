@@ -1,0 +1,16 @@
+---
+
+- name: Reload the firewalld service
+  listen: firewalld_reload
+  ansible.builtin.service:
+    name: firewalld
+    state: reloaded
+
+- name: Add the default interface to the trusted zone
+  listen: firewalld_reload
+  ansible.posix.firewalld:
+    zone: trusted
+    interface: "{{ ansible_facts.default_ipv4.interface }}"
+    permanent: yes
+    immediate: yes
+    state: enabled

@@ -1,0 +1,15 @@
+---
+
+- name: Explicitly gather the facts 
+  ansible.builtin.setup:
+
+- name: Permit certain traffic from the trusted zone
+  ansible.posix.firewalld:
+    port: "{{ port }}"
+    zone: trusted
+    permanent: yes
+    state: enabled
+  notify: firewalld_reload
+  loop: "{{ percona_cluster_ports }}"
+  loop_control:
+    loop_var: port

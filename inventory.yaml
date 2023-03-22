@@ -16,6 +16,10 @@ all:
     percona:
       vars:
         ansible_ssh_port: 22022
+        ansible_connection: ssh
+        ansible_user: root
+        ansible_ssh_private_key_file: "{{ ssh_private_key_file }}"
+        ansible_ssh_common_args: "-o UserKnownHostsFile={{ ssh_known_hosts_file }}"
         kickstart_template: pxc_node.ks.j2
         ipv4_netmask: 255.255.255.0
         ipv4_gateway: 10.13.4.254

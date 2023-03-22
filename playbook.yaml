@@ -8,3 +8,9 @@
     - role: nodes
       when: not (skip_nodes_setup | default(false) | bool)
     - nodes_ssh_keys
+
+- name: Set up the Percona XtraDB clusters
+  hosts:
+    - percona
+  roles:
+    - nodes_firewall
