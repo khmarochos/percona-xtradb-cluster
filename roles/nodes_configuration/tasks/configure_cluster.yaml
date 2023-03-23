@@ -7,6 +7,12 @@
     mode: 0700
     force: no
 
+- name: "Generate or lookup the password of root for the {{ percona_cluster }} cluster"
+  ansible.builtin.set_fact:
+    __nodes_configuration__mysql_root_username: root
+    __nodes_configuration__mysql_root_password: "{{ lookup('password', cluster_spool_directory ~ '/root.password length=32 chars=ascii_letters,digits') }}"
+  no_log: true
+
 - name: "Generate or lookup the password of sst for the {{ percona_cluster }} cluster"
   ansible.builtin.set_fact:
     __nodes_configuration__mysql_sst_username: sst
@@ -37,6 +43,9 @@
         ] | join('.')
       }}
     percona_cluster: "{{ percona_cluster }}"
+    mysql_bootstrap_node: "{{ groups[percona_cluster][0] }}"
+    mysql_root_username: "{{ __nodes_configuration__mysql_root_username }}"
+    mysql_root_password: "{{ __nodes_configuration__mysql_root_password }}"
     mysql_sst_username: "{{ __nodes_configuration__mysql_sst_username }}"
     mysql_sst_password: "{{ __nodes_configuration__mysql_sst_password }}"
   delegate_to: "{{ host }}"

@@ -1,0 +1,14 @@
+---
+
+- name: Create or update the root's ~/.my.cnf file
+  ansible.builtin.include_tasks: update_my_cnf.yaml
+  vars:
+    username: "{{ mysql_root_username }}"
+    password: "{{ mysql_root_password }}"
+  no_log: true
+
+- name: Start MySQL
+  ansible.builtin.service:
+    name: mysql
+    state: started
+    enabled: true

@@ -1,0 +1,81 @@
+---
+
+- name: Enable MySQL in the regular mode
+  ansible.builtin.service:
+    name: mysql
+    state: stopped
+    enabled: true
+
+- name: Start MySQL in the bootstrap mode
+  ansible.builtin.service:
+    name: mysql@bootstrap
+    state: started
+    enabled: false
+
+- name: Check if the root's ~/.my.cnf exists
+  ansible.builtin.stat:
+    path: /root/.my.cnf
+  register: root_my_cnf
+
+- when: not root_my_cnf.stat.exists
+  block:
+
+    - name: Install PyMySQL
+      ansible.builtin.yum:
+        name: python2-PyMySQL
+        state: latest
+
+    - name: Find the temporary password
+      ansible.builtin.shell:
+        cmd: >-
+          sed
+          -r
+          -n
+          's/^.*\[Note\] A temporary password is generated for root@localhost: (.+)$/\1/gp'
+          /var/log/mysqld.log
+          | tail -1
+      changed_when: false
+      register: mysql_root_password_outdated
+      no_log: true
+
+    - name: Create the root's ~/.my.cnf file
+      ansible.builtin.include_tasks: update_my_cnf.yaml
+      vars:
+        username: "{{ mysql_root_username }}"
+        password: "{{ mysql_root_password_outdated.stdout }}"
+      no_log: true
+
+    - name: Update the temporary root password
+      ansible.builtin.command:
+        cmd: mysql --connect-expired-password
+        stdin: "SET PASSWORD = '{{ mysql_root_password_outdated.stdout | hash('sha1') }}';"
+      no_log: false
+
+    - name: Change the MySQL root password
+      community.mysql.mysql_user:
+        login_host: localhost
+        login_user: root
+        login_password: "{{ mysql_root_password_outdated.stdout | hash('sha1') }}"
+        name: root
+        password: "{{ mysql_root_password }}"
+        state: present
+      no_log: true
+
+    - name: Update the root's ~/.my.cnf file
+      ansible.builtin.include_tasks: update_my_cnf.yaml
+      vars:
+        username: "{{ mysql_root_username }}"
+        password: "{{ mysql_root_password }}"
+      no_log: true
+
+    - name: Grant access to sst
+      community.mysql.mysql_user:
+        login_host: localhost
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        name: "{{ mysql_sst_username }}"
+        password: "{{ mysql_sst_password }}"
+        priv: '*.*:RELOAD,LOCK TABLES,PROCESS,REPLICATION CLIENT'
+        state: present
+      no_log: true
+

@@ -1,0 +1,11 @@
+---
+
+- name: Create or update the root's ~/.my.cnf file
+  ansible.builtin.template:
+    src: .my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
+    force: true
+  no_log: true

@@ -1,4 +1,17 @@
 ---
 
+- name: Explicitly gather the facts
+  ansible.builtin.setup:
+
 - name: Set up the wsrep configuration
   ansible.builtin.include_tasks: wsrep_cnf.yaml
+
+- name: Set up the Percona XtraDB Cluster (the Bootstrap node)
+  include_tasks: mysql_bootstrap.yaml
+  when:
+    - inventory_hostname == mysql_bootstrap_node
+
+- name: Set up the Percona XtraDB Cluster
+  include_tasks: mysql.yaml
+  when:
+    - inventory_hostname != mysql_bootstrap_node
