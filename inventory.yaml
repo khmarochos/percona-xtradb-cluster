@@ -35,6 +35,7 @@ all:
       children:
         pxc_production:
           vars:
+            kickstart_template: pxc_node_datadisk.ks.j2
             ipv4_nameservers:
               - 10.13.4.254
           hosts:

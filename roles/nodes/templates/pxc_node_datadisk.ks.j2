@@ -1,0 +1,57 @@
+# Install OS instead of upgrade
+install
+# Use CD installation
+cdrom
+# Root password
+rootpw --iscrypted !!
+# System authorization information
+auth --useshadow --passalgo=sha512
+# Firewall configuration
+firewall --enabled --port={{ ssh_port }}:tcp
+# SELinux configuration
+selinux --disabled
+# Installation logging level
+logging --level=info
+# Use text mode install
+text
+# Do not configure the X Window System
+skipx
+# System timezone, language and keyboard
+timezone Europe/Kiev
+lang en_US.UTF-8
+keyboard us
+# If you want to configure a static IP:
+network --device eth0 --hostname {{ hostname }} --bootproto=static --ip={{ ipv4_address }} --netmask={{ ipv4_netmask }} --gateway={{ ipv4_gateway }} --nameserver={{ ipv4_nameservers | join(',') }}
+# System bootloader configuration
+bootloader --location=mbr
+# Partition clearing information
+clearpart --all --initlabel
+# Disk partitioning information
+part /boot --fstype=ext4 --size=512 --ondisk=vda
+part pv.01 --size=1 --grow --ondisk=vda
+part pv.02 --size=1 --grow --ondisk=vdb
+volgroup vg_root pv.01
+volgroup vg_data pv.02
+logvol / --fstype=xfs --size=5120 --vgname=vg_root --name=lv_root
+logvol swap --fstype=swap --size=1024 --vgname=vg_root --name=lv_swap
+logvol /var/lib/mysql --fstype=xfs --size=1 --grow --vgname=vg_data --name=lv_mysql
+# SSH key
+sshkey --user=root "{{ ssh_public_rsa_key }}"
+# Reboot after installation
+reboot
+# Packages
+%packages --nobase
+@core
+# @base
+%end
+#
+%post
+yum -y update
+yum -y install epel-release
+yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+yum -y install Percona-XtraDB-Cluster-57.x86_64
+systemctl disable mysql.service
+{% if ssh_port != '22' %}
+sed -i 's/^#Port [0-9]\+$/Port {{ ssh_port }}/' /etc/ssh/sshd_config
+{% endif %}
+%end
