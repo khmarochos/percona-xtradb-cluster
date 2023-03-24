@@ -13,3 +13,10 @@
   loop: "{{ percona_cluster_ports }}"
   loop_control:
     loop_var: port
+
+- name: Update the SNAT rules
+  ansible.builtin.include_tasks: snat_subnet.yaml
+  loop: "{{ snat_subnets }}"
+  loop_control:
+    loop_var: snat_subnet
+

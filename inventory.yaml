@@ -32,6 +32,10 @@ all:
           - 8.8.8.8
           - 9.9.9.9
         domain_name: pxc.khmarochos.melnyk.host
+        snat_rule_number: 13
+        snat_subnets:
+          - 10.13.16.0/22
+        proxysql_kubernetes_namespace: khmarochos-wandering-kobzar
       children:
         pxc_production:
           vars:
@@ -53,6 +57,9 @@ all:
               - 9.9.9.9
             domain_name: d.pxc.khmarochos.melnyk.host
             ansible_ssh_port: 22122
+            snat_subnets:
+              - 10.13.16.0/22
+              - 192.168.13.0/24
           hosts:
             pxc1.development:
               ansible_host: 10.13.4.144

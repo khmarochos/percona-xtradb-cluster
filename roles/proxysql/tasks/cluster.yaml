@@ -1,0 +1,67 @@
+---
+
+- name: Create the spool directory
+  ansible.builtin.file:
+    path: "{{ cluster_spool_directory }}"
+    mode: 0700
+    state: directory
+    recurse: true
+
+- name: "Find the bootstrapper node of {{ percona_cluster }}"
+  ansible.builtin.set_fact:
+    __proxysql__bootstrapper: "{{ hostvars[groups[percona_cluster][0]].mysql_bootstrap_node }}"
+
+- name: "Lookup or generate the password for the administrative account of ProxySQL for {{ percona_cluster }}"
+  ansible.builtin.set_fact:
+    __proxysql__admin_username: "{{ proxysql_admin_username }}"
+    __proxysql__admin_password: "{{ lookup('password', cluster_spool_directory + '/admin.password', length=32) }}"
+  no_log: true
+
+- name: "Lookup the username and password of the monitor account of {{ percona_cluster }}"
+  ansible.builtin.set_fact:
+    __proxysql__monitor_username: "{{ hostvars[__proxysql__bootstrapper].mysql_monitor_username }}"
+    __proxysql__monitor_password: "{{ hostvars[__proxysql__bootstrapper].mysql_monitor_password }}"
+  no_log: true
+
+- name: "Lookup the username and password of the root account of {{ percona_cluster }}"
+  ansible.builtin.set_fact:
+    __proxysql__root_username: "{{ hostvars[__proxysql__bootstrapper].mysql_root_username }}"
+    __proxysql__root_password: "{{ hostvars[__proxysql__bootstrapper].mysql_root_password }}"
+  no_log: true
+
+- name: "Grant access to the monitor of {{ percona_cluster }}"
+  delegate_to: "{{ __proxysql__bootstrapper }}"
+  community.mysql.mysql_user:
+    login_host: localhost
+    login_user: "{{ __proxysql__root_username }}"
+    login_password: "{{ __proxysql__root_password }}"
+    name: "{{ __proxysql__monitor_username }}"
+    password: "{{ __proxysql__monitor_password }}"
+    priv: '*.*:USAGE'
+    state: present
+  no_log: true
+
+- name: "Deploy the ProxySQL cluster for {{ percona_cluster }}"
+  kubernetes.core.helm:
+    name: "proxysql-{{ percona_cluster | regex_replace('_', '-') }}"
+    chart_ref: proxysql-cluster/proxysql-cluster
+    release_namespace: "{{ hostvars[__proxysql__bootstrapper].proxysql_kubernetes_namespace }}"
+    create_namespace: true
+    values:
+#      serviceAccount:
+#        name: "{{ percona_cluster | regex_replace('_', '-') }}"
+      persistence:
+        enabled: false
+      database:
+        accounts:
+          root:
+            username: "{{ __proxysql__root_username }}"
+            password: "{{ __proxysql__root_password }}"            
+          admin:
+            username: "{{ __proxysql__admin_username }}"
+            password: "{{ __proxysql__admin_password }}"
+          monitor:
+            username: "{{ __proxysql__monitor_username }}"
+            password: "{{ __proxysql__monitor_password }}"
+        servers: "{{ groups[percona_cluster] | map('extract', hostvars, 'ansible_host') }}"
+

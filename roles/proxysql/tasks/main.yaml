@@ -1,0 +1,14 @@
+---
+
+- name: Add the proxysql-cluster repository
+  kubernetes.core.helm_repository:
+    repo_name: proxysql-cluster
+    repo_url: https://khmarochos.github.io/proxysql-cluster/
+
+- name: Configure ProxySQL for each Percona XtraDB cluster
+  ansible.builtin.include_tasks: cluster.yaml
+  vars:
+    cluster_spool_directory: "{{ spool_directory }}/{{ percona_cluster }}"
+  loop: "{{ percona_clusters }}"
+  loop_control:
+    loop_var: percona_cluster

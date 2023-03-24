@@ -16,3 +16,11 @@
   roles:
     - nodes_firewall
     - nodes_percona_cluster
+
+- name: Set up the ProxySQL clusters
+  hosts:
+    - localhost
+  roles:
+    - proxysql
+  tags:
+    - proxysql_only

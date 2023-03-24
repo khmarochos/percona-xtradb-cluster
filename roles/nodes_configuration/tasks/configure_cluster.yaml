@@ -10,7 +10,13 @@
 - name: "Generate or lookup the password of root for the {{ percona_cluster }} cluster"
   ansible.builtin.set_fact:
     __nodes_configuration__mysql_root_username: root
-    __nodes_configuration__mysql_root_password: "{{ lookup('password', cluster_spool_directory ~ '/root.password length=32 chars=ascii_letters,digits') }}"
+    __nodes_configuration__mysql_root_password: >-
+      {{
+        lookup(
+          'password',
+          cluster_spool_directory ~ '/root.password length=32 chars=ascii_letters,digits'
+        )
+      }}
   no_log: true
 
 - name: "Generate or lookup the password of sst for the {{ percona_cluster }} cluster"
@@ -21,6 +27,18 @@
         lookup(
           'password',
           cluster_spool_directory ~ '/sst.password length=32 chars=ascii_letters,digits'
+        )
+      }}
+  no_log: true
+
+- name: "Generate or lookup the password of sst for the {{ percona_cluster }} cluster"
+  ansible.builtin.set_fact:
+    __nodes_configuration__mysql_monitor_username: monitor
+    __nodes_configuration__mysql_monitor_password: >-
+      {{
+        lookup(
+          'password',
+          cluster_spool_directory ~ '/monitor.password length=32 chars=ascii_letters,digits'
         )
       }}
   no_log: true
@@ -48,6 +66,8 @@
     mysql_root_password: "{{ __nodes_configuration__mysql_root_password }}"
     mysql_sst_username: "{{ __nodes_configuration__mysql_sst_username }}"
     mysql_sst_password: "{{ __nodes_configuration__mysql_sst_password }}"
+    mysql_monitor_username: "{{ __nodes_configuration__mysql_monitor_username }}"
+    mysql_monitor_password: "{{ __nodes_configuration__mysql_monitor_password }}"
   delegate_to: "{{ host }}"
   delegate_facts: true
   loop: "{{ groups[percona_cluster] }}"

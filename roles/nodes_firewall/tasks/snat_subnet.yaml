@@ -1,0 +1,35 @@
+---
+
+- name: Check if the SNAT rule is present
+  ansible.builtin.command:
+    cmd: >-
+      firewall-cmd
+      --direct
+      --query-rule
+      ipv4
+      nat
+      INPUT
+      {{ snat_rule_number }}
+      -i {{ ansible_facts.default_ipv4.interface }}
+      -s {{ snat_subnet }}
+      -j SNAT --to 127.0.0.1
+  register: __nodes_firewall__snat_enabled
+  failed_when: __nodes_firewall__snat_enabled.rc not in [0, 1]
+  changed_when: false
+
+- name: Add the SNAT rule
+  ansible.builtin.command:
+    cmd: >-
+      firewall-cmd
+      --permanent
+      --direct
+      --add-rule
+      ipv4
+      nat
+      INPUT
+      {{ snat_rule_number }}
+      -i {{ ansible_facts.default_ipv4.interface }}
+      -s {{ snat_subnet }}
+      -j SNAT --to 127.0.0.1
+  when: __nodes_firewall__snat_enabled.rc == 1
+  notify: firewalld_reload
